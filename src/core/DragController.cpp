@@ -722,26 +722,35 @@ bool DragController::onDnDEvent(View *view, Event *e)
         KDDW_DEBUG("DragController::onDnDEvent: ev={}, dropArea=", int(e->type()), ( void * )view->asDropAreaController());
 
         if (auto dropArea = qobject_cast<Core::DropArea *>(Core::View::firstParentOfType(view, ViewType::DropArea))) {
-            auto dropEvent = static_cast<DropEvent *>(e);
-            const QPoint globalEventPosition = view->mapToGlobal(Qt5Qt6Compat::eventPos(dropEvent));
-
             switch (int(e->type())) {
-            case Event::DragEnter:
-                if (activeState()->handleDragEnter(static_cast<DragMoveEvent *>(e), dropArea, globalEventPosition))
+            case Event::DragEnter: {
+                auto *dragMoveEvent = static_cast<DragMoveEvent *>(e);
+                const QPoint globalEventPosition =
+                    view->mapToGlobal(Qt5Qt6Compat::eventPos(dragMoveEvent));
+                if (activeState()->handleDragEnter(dragMoveEvent, dropArea, globalEventPosition))
                     return true;
                 break;
+            }
             case Event::DragLeave:
                 if (activeState()->handleDragLeave(dropArea))
                     return true;
                 break;
-            case Event::DragMove:
-                if (activeState()->handleDragMove(static_cast<DragMoveEvent *>(e), dropArea, globalEventPosition))
+            case Event::DragMove: {
+                auto *dragMoveEvent = static_cast<DragMoveEvent *>(e);
+                const QPoint globalEventPosition =
+                    view->mapToGlobal(Qt5Qt6Compat::eventPos(dragMoveEvent));
+                if (activeState()->handleDragMove(dragMoveEvent, dropArea, globalEventPosition))
                     return true;
                 break;
-            case Event::Drop:
+            }
+            case Event::Drop: {
+                auto *dropEvent = static_cast<DropEvent *>(e);
+                const QPoint globalEventPosition =
+                    view->mapToGlobal(Qt5Qt6Compat::eventPos(dropEvent));
                 if (activeState()->handleDrop(dropEvent, dropArea, globalEventPosition))
                     return true;
                 break;
+            }
             default:
                 break;
             }
